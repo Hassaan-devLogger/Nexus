@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEXUS — Life OS</title>
+  <style>
+    /* ── Variables ── */
+    :root {
+      --bg:      #0d0d0f;
+      --bg2:     #141418;
+      --bg3:     #1e1e26;
+      --border:  #2a2a38;
+      --text:    #e8e8f0;
+      --text2:   #8888a8;
+      --accent:  #7c6dfa;
+      --green:   #4ade80;
+      --red:     #f87171;
+      --yellow:  #fbbf24;
+      --radius:  10px;
+    }
+    [data-theme="light"] {
+      --bg:     #f4f4f8;
+      --bg2:    #ffffff;
+      --bg3:    #ededf3;
+      --border: #d8d8e4;
+      --text:   #1a1a28;
+      --text2:  #5a5a78;
+    }
+
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh;
+    }
+    button { cursor: pointer; font-family: inherit; }
+    input, textarea, select {
+      font-family: inherit; font-size: 0.9rem;
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--text); border-radius: 6px;
+      padding: 0.5rem 0.75rem; width: 100%; outline: none;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+    textarea { resize: vertical; }
+
+    /* ── Layout ── */
+    .app { display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 200px; background: var(--bg2);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      padding: 1.5rem 0;
+      position: fixed; top: 0; left: 0; bottom: 0;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0 1.2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 0.5rem;
+    }
+    .logo-icon {
+      width: 30px; height: 30px; background: var(--accent);
+      border-radius: 8px; display: flex; align-items: center;
+      justify-content: center; color: #fff; font-weight: 700;
+    }
+    .logo-text { font-weight: 700; font-size: 1rem; letter-spacing: 0.1em; }
+    .nav-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0.65rem 1.2rem; color: var(--text2);
+      font-size: 0.88rem; background: none; border: none;
+      width: 100%; text-align: left; transition: all 0.15s;
+      border-left: 3px solid transparent;
+    }
+    .nav-btn:hover { color: var(--text); background: var(--bg3); }
+    .nav-btn.active {
+      color: var(--accent); background: rgba(124,109,250,0.1);
+      border-left-color: var(--accent);
+    }
+    .nav-icon { font-size: 1rem; }
+    .sidebar-bottom { margin-top: auto; padding: 1rem 1.2rem; }
+    .theme-btn {
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--text2); padding: 0.4rem 0.8rem;
+      border-radius: 6px; font-size: 0.8rem; width: 100%;
+    }
+    .theme-btn:hover { color: var(--text); }
+
+    /* ── Main ── */
+    .main { margin-left: 200px; flex: 1; padding: 2rem; max-width: 860px; }
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── Page header ── */
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem; padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .page-header h1 { font-size: 1.4rem; font-weight: 700; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .card-title {
+      font-size: 0.7rem; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--text2); margin-bottom: 0.75rem;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 0.5rem 1.1rem; border-radius: 6px;
+      font-size: 0.85rem; font-weight: 600; border: none;
+      transition: all 0.15s; cursor: pointer;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #6355e0; }
+    .btn-ghost {
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-danger {
+      background: rgba(248,113,113,0.1);
+      border: 1px solid rgba(248,113,113,0.3);
+      color: var(--red);
+    }
+    .btn-sm { padding: 0.3rem 0.7rem; font-size: 0.78rem; font-weight: 500; }
+
+    /* ── Form ── */
+    .form-group { margin-bottom: 0.85rem; }
+    .form-group label {
+      display: block; font-size: 0.75rem;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text2); margin-bottom: 0.3rem;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+    /* ── Dashboard ── */
+    .dash-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .stat-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.2rem; text-align: center;
+    }
+    .stat-value {
+      font-size: 2rem; font-weight: 700; color: var(--accent);
+      line-height: 1; margin-bottom: 0.3rem;
+    }
+    .stat-label { font-size: 0.75rem; color: var(--text2); }
+    .quote-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.2rem;
+      border-left: 3px solid var(--accent); margin-bottom: 1rem;
+      font-size: 0.9rem; color: var(--text2); font-style: italic;
+    }
+
+    /* ── Daily log ── */
+    .date-nav {
+      display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;
+    }
+    .date-nav button {
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--text); border-radius: 6px;
+      width: 30px; height: 30px; font-size: 1rem;
+    }
+    .date-nav button:hover { border-color: var(--accent); color: var(--accent); }
+    .date-nav span { font-size: 0.95rem; font-weight: 500; }
+
+    /* ── Habits ── */
+    .habit-item {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 0.85rem 1rem; background: var(--bg2);
+      border: 1px solid var(--border); border-radius: 8px;
+      margin-bottom: 0.6rem;
+    }
+    .habit-check {
+      width: 30px; height: 30px; border-radius: 8px;
+      border: 2px solid var(--border); display: flex;
+      align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0; font-size: 1rem;
+      background: var(--bg3); transition: all 0.15s;
+    }
+    .habit-check.done { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .habit-name { flex: 1; font-size: 0.92rem; }
+    .streak { font-size: 0.78rem; color: var(--text2); }
+
+    /* ── Goals ── */
+    .goal-item {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1rem 1.2rem; margin-bottom: 0.6rem;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+    }
+    .goal-item.completed .goal-title { text-decoration: line-through; color: var(--text2); }
+    .goal-title { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.2rem; }
+    .goal-desc { font-size: 0.82rem; color: var(--text2); margin-bottom: 0.4rem; }
+    .goal-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+    .pill {
+      display: inline-block; font-size: 0.68rem;
+      padding: 0.15rem 0.5rem; border-radius: 20px; border: 1px solid;
+    }
+    .pill-high   { color: var(--red);    border-color: rgba(248,113,113,0.4); }
+    .pill-medium { color: var(--yellow); border-color: rgba(251,191,36,0.4); }
+    .pill-low    { color: var(--green);  border-color: rgba(74,222,128,0.4); }
+
+    /* ── Loading / Error ── */
+    .loading { color: var(--text2); font-size: 0.88rem; padding: 1rem 0; }
+    .error-msg {
+      background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3);
+      color: var(--red); padding: 0.75rem 1rem; border-radius: 8px;
+      margin-bottom: 1rem; font-size: 0.85rem;
+    }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 1.5rem; right: 1.5rem;
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--text); padding: 0.7rem 1.1rem; border-radius: 8px;
+      font-size: 0.85rem; display: none; z-index: 999;
+    }
+    #toast.show { display: block; }
+    #toast.success { border-color: rgba(74,222,128,0.5); color: var(--green); }
+    #toast.error   { border-color: rgba(248,113,113,0.5); color: var(--red); }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 1rem; }
+      .dash-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">N</div>
+      <div class="logo-text">NEXUS</div>
+    </div>
+    <button class="nav-btn active" onclick="showPage('dashboard')">
+      <span class="nav-icon">▦</span> Dashboard
+    </button>
+    <button class="nav-btn" onclick="showPage('daily')">
+      <span class="nav-icon">📅</span> Daily Log
+    </button>
+    <button class="nav-btn" onclick="showPage('habits')">
+      <span class="nav-icon">✅</span> Habits
+    </button>
+    <button class="nav-btn" onclick="showPage('goals')">
+      <span class="nav-icon">🎯</span> Goals
+    </button>
+    <div class="sidebar-bottom">
+      <button class="theme-btn" onclick="toggleTheme()">Toggle Theme</button>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <section id="page-dashboard" class="page active">
+      <div class="page-header">
+        <h1>Dashboard</h1>
+        <span id="dashDate" style="color:var(--text2);font-size:0.88rem;"></span>
+      </div>
+      <div class="quote-card" id="dashQuote"></div>
+      <div class="dash-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="statLogs">—</div>
+          <div class="stat-label">Total Log Days</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statHabits">—</div>
+          <div class="stat-label">Active Habits</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statGoals">—</div>
+          <div class="stat-label">Active Goals</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Today's Habits</div>
+        <div id="dashHabitsList"></div>
+      </div>
+    </section>
+
+    <!-- DAILY LOG -->
+    <section id="page-daily" class="page">
+      <div class="page-header"><h1>Daily Log</h1></div>
+      <div class="date-nav">
+        <button onclick="changeDate(-1)">‹</button>
+        <span id="currentDateLabel"></span>
+        <button onclick="changeDate(1)">›</button>
+      </div>
+      <div class="card">
+        <div class="form-group">
+          <label>Mood</label>
+          <select id="logMood">
+            <option value="">— Select —</option>
+            <option value="excellent">😄 Excellent</option>
+            <option value="good">🙂 Good</option>
+            <option value="neutral">😐 Neutral</option>
+            <option value="low">😕 Low</option>
+            <option value="bad">😞 Bad</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>What I did today</label>
+          <textarea id="logDid" rows="5" placeholder="Describe your day..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="logNotes" rows="3" placeholder="Any notes..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveLog()">Save Entry</button>
+      </div>
+    </section>
+
+    <!-- HABITS -->
+    <section id="page-habits" class="page">
+      <div class="page-header">
+        <h1>Habits</h1>
+        <button class="btn btn-primary" onclick="showAddHabit()">+ New Habit</button>
+      </div>
+      <!-- Add habit form (hidden by default) -->
+      <div class="card" id="addHabitForm" style="display:none">
+        <div class="card-title">New Habit</div>
+        <div class="form-group">
+          <label>Habit Name</label>
+          <input type="text" id="habitName" placeholder="e.g. Read 30 mins, Exercise, Meditate..." />
+        </div>
+        <div style="display:flex;gap:0.5rem;">
+          <button class="btn btn-primary" onclick="createHabit()">Add</button>
+          <button class="btn btn-ghost" onclick="hideAddHabit()">Cancel</button>
+        </div>
+      </div>
+      <!-- Date nav for checking habits -->
+      <div class="date-nav">
+        <button onclick="changeHabitDate(-1)">‹</button>
+        <span id="habitDateLabel"></span>
+        <button onclick="changeHabitDate(1)">›</button>
+      </div>
+      <div id="habitsList"></div>
+    </section>
+
+    <!-- GOALS -->
+    <section id="page-goals" class="page">
+      <div class="page-header">
+        <h1>Goals</h1>
+        <button class="btn btn-primary" onclick="showAddGoal()">+ New Goal</button>
+      </div>
+      <!-- Add goal form -->
+      <div class="card" id="addGoalForm" style="display:none">
+        <div class="card-title">New Goal</div>
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="goalTitle" placeholder="Goal title..." />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="goalDesc" rows="2" placeholder="Optional details..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select id="goalPriority">
+            <option value="high">High</option>
+            <option value="medium" selected>Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:0.5rem;">
+          <button class="btn btn-primary" onclick="createGoal()">Add</button>
+          <button class="btn btn-ghost" onclick="hideAddGoal()">Cancel</button>
+        </div>
+      </div>
+      <div id="goalsList"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Toast notification -->
+<div id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────────────
+//  NEXUS Frontend — script
+//  Talks to the backend API via fetch()
+// ─────────────────────────────────────────────────────
+
+// The API base URL — in production this points to the backend container
+// When running via Docker Compose, the browser hits localhost:3000
+const API = 'http://localhost:3000/api';
+
+// ── Date helpers ──────────────────────────────────────
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function addDays(str, n) {
+  const d = new Date(str + 'T00:00:00');
+  d.setDate(d.getDate() + n);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function formatDate(str) {
+  return new Date(str + 'T00:00:00').toLocaleDateString('en-US',
+    { weekday:'short', month:'short', day:'numeric', year:'numeric' });
+}
+
+// ── State ─────────────────────────────────────────────
+let currentLogDate   = todayStr();
+let currentHabitDate = todayStr();
+
+// ── Toast ─────────────────────────────────────────────
+let toastTimer;
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = '', 2500);
+}
+
+// ── API helper — wraps fetch with error handling ──────
+async function api(method, path, body = null) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(API + path, opts);
+  if (!res.ok) throw new Error(`API error ${res.status}`);
+  return res.json();
+}
+
+// ── Navigation ────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelector(`.nav-btn[onclick="showPage('${name}')"]`).classList.add('active');
+  if (name === 'dashboard') loadDashboard();
+  if (name === 'daily')     loadDailyLog();
+  if (name === 'habits')    loadHabits();
+  if (name === 'goals')     loadGoals();
+}
+
+// ── Theme ─────────────────────────────────────────────
+function toggleTheme() {
+  const html = document.documentElement;
+  html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+}
+
+// ─────────────────────────────────────────────────────
+//  DASHBOARD
+// ─────────────────────────────────────────────────────
+const QUOTES = [
+  "Small consistent actions compound into extraordinary results.",
+  "Every day is a new opportunity to improve yourself.",
+  "Progress, not perfection.",
+  "Work hard in silence. Let your results be the noise.",
+  "One day or day one. You decide.",
+];
+
+async function loadDashboard() {
+  document.getElementById('dashDate').textContent = formatDate(todayStr());
+  document.getElementById('dashQuote').textContent =
+    '"' + QUOTES[new Date().getDate() % QUOTES.length] + '"';
+
+  try {
+    const [logs, habits, goals, habitLogs] = await Promise.all([
+      api('GET', '/logs'),
+      api('GET', '/habits'),
+      api('GET', '/goals'),
+      api('GET', '/habit-logs/' + todayStr()),
+    ]);
+
+    document.getElementById('statLogs').textContent   = logs.length;
+    document.getElementById('statHabits').textContent = habits.length;
+    document.getElementById('statGoals').textContent  = goals.filter(g => g.status === 'active').length;
+
+    // Today's habits mini list
+    const el = document.getElementById('dashHabitsList');
+    if (!habits.length) {
+      el.innerHTML = '<p style="color:var(--text2);font-size:0.85rem;">No habits yet.</p>';
+      return;
+    }
+    el.innerHTML = habits.map(h => {
+      const done = habitLogs.find(l => l.habit_id === h.id && l.done);
+      return `<div class="habit-item">
+        <div class="habit-check ${done ? 'done' : ''}">${done ? '✓' : ''}</div>
+        <div class="habit-name">${esc(h.name)}</div>
+      </div>`;
+    }).join('');
+  } catch (err) {
+    showError('page-dashboard', 'Cannot connect to the API. Is the backend running?');
+  }
+}
+
+// ─────────────────────────────────────────────────────
+//  DAILY LOG
+// ─────────────────────────────────────────────────────
+async function loadDailyLog() {
+  document.getElementById('currentDateLabel').textContent = formatDate(currentLogDate);
+  try {
+    const log = await api('GET', '/logs/' + currentLogDate);
+    document.getElementById('logMood').value  = log?.mood      || '';
+    document.getElementById('logDid').value   = log?.did_today || '';
+    document.getElementById('logNotes').value = log?.notes     || '';
+  } catch {
+    document.getElementById('logMood').value  = '';
+    document.getElementById('logDid').value   = '';
+    document.getElementById('logNotes').value = '';
+  }
+}
+
+function changeDate(n) {
+  currentLogDate = addDays(currentLogDate, n);
+  loadDailyLog();
+}
+
+async function saveLog() {
+  const body = {
+    log_date:  currentLogDate,
+    mood:      document.getElementById('logMood').value,
+    did_today: document.getElementById('logDid').value,
+    notes:     document.getElementById('logNotes').value,
+  };
+  try {
+    await api('POST', '/logs', body);
+    toast('Entry saved!', 'success');
+  } catch {
+    toast('Save failed — check the API', 'error');
+  }
+}
+
+// ─────────────────────────────────────────────────────
+//  HABITS
+// ─────────────────────────────────────────────────────
+async function loadHabits() {
+  document.getElementById('habitDateLabel').textContent = formatDate(currentHabitDate);
+  const el = document.getElementById('habitsList');
+  try {
+    const [habits, logs] = await Promise.all([
+      api('GET', '/habits'),
+      api('GET', '/habit-logs/' + currentHabitDate),
+    ]);
+    if (!habits.length) {
+      el.innerHTML = '<p style="color:var(--text2);font-size:0.85rem;padding:0.5rem 0">No habits yet. Add one above!</p>';
+      return;
+    }
+    el.innerHTML = habits.map(h => {
+      const logEntry = logs.find(l => l.habit_id === h.id);
+      const done = logEntry && logEntry.done;
+      return `<div class="habit-item">
+        <div class="habit-check ${done ? 'done' : ''}"
+             onclick="toggleHabit(${h.id}, ${done})">${done ? '✓' : ''}</div>
+        <div class="habit-name">${esc(h.name)}</div>
+        <button class="btn btn-danger btn-sm" onclick="deleteHabit(${h.id})">✕</button>
+      </div>`;
+    }).join('');
+  } catch {
+    el.innerHTML = '<p style="color:var(--red)">Could not load habits.</p>';
+  }
+}
+
+function changeHabitDate(n) {
+  currentHabitDate = addDays(currentHabitDate, n);
+  loadHabits();
+}
+
+function showAddHabit()  { document.getElementById('addHabitForm').style.display = ''; }
+function hideAddHabit()  { document.getElementById('addHabitForm').style.display = 'none'; }
+
+async function createHabit() {
+  const name = document.getElementById('habitName').value.trim();
+  if (!name) return toast('Enter a habit name', 'error');
+  try {
+    await api('POST', '/habits', { name });
+    document.getElementById('habitName').value = '';
+    hideAddHabit();
+    toast('Habit added!', 'success');
+    loadHabits();
+  } catch {
+    toast('Failed to add habit', 'error');
+  }
+}
+
+async function toggleHabit(id, currentlyDone) {
+  try {
+    await api('POST', '/habit-logs', {
+      habit_id: id,
+      log_date: currentHabitDate,
+      done: !currentlyDone,
+    });
+    loadHabits();
+  } catch {
+    toast('Could not update habit', 'error');
+  }
+}
+
+async function deleteHabit(id) {
+  if (!confirm('Delete this habit?')) return;
+  try {
+    await api('DELETE', '/habits/' + id);
+    toast('Habit deleted', 'success');
+    loadHabits();
+  } catch {
+    toast('Delete failed', 'error');
+  }
+}
+
+// ─────────────────────────────────────────────────────
+//  GOALS
+// ─────────────────────────────────────────────────────
+async function loadGoals() {
+  const el = document.getElementById('goalsList');
+  try {
+    const goals = await api('GET', '/goals');
+    if (!goals.length) {
+      el.innerHTML = '<p style="color:var(--text2);font-size:0.85rem;padding:0.5rem 0">No goals yet.</p>';
+      return;
+    }
+    el.innerHTML = goals.map(g => `
+      <div class="goal-item ${g.status === 'completed' ? 'completed' : ''}">
+        <div style="flex:1">
+          <div class="goal-title">${esc(g.title)}</div>
+          ${g.description ? `<div class="goal-desc">${esc(g.description)}</div>` : ''}
+          <span class="pill pill-${g.priority}">${g.priority}</span>
+        </div>
+        <div class="goal-actions">
+          <button class="btn btn-ghost btn-sm"
+            onclick="toggleGoal(${g.id}, '${g.status}')">
+            ${g.status === 'active' ? '✓ Done' : '↺ Reopen'}
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="deleteGoal(${g.id})">✕</button>
+        </div>
+      </div>`).join('');
+  } catch {
+    el.innerHTML = '<p style="color:var(--red)">Could not load goals.</p>';
+  }
+}
+
+function showAddGoal() { document.getElementById('addGoalForm').style.display = ''; }
+function hideAddGoal() { document.getElementById('addGoalForm').style.display = 'none'; }
+
+async function createGoal() {
+  const title = document.getElementById('goalTitle').value.trim();
+  if (!title) return toast('Enter a goal title', 'error');
+  try {
+    await api('POST', '/goals', {
+      title,
+      description: document.getElementById('goalDesc').value.trim(),
+      priority:    document.getElementById('goalPriority').value,
+    });
+    document.getElementById('goalTitle').value = '';
+    document.getElementById('goalDesc').value  = '';
+    hideAddGoal();
+    toast('Goal added!', 'success');
+    loadGoals();
+  } catch {
+    toast('Failed to add goal', 'error');
+  }
+}
+
+async function toggleGoal(id, currentStatus) {
+  const newStatus = currentStatus === 'active' ? 'completed' : 'active';
+  try {
+    await api('PATCH', '/goals/' + id, { status: newStatus });
+    loadGoals();
+  } catch {
+    toast('Could not update goal', 'error');
+  }
+}
+
+async function deleteGoal(id) {
+  if (!confirm('Delete this goal?')) return;
+  try {
+    await api('DELETE', '/goals/' + id);
+    toast('Goal deleted', 'success');
+    loadGoals();
+  } catch {
+    toast('Delete failed', 'error');
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────
+function esc(str) {
+  return String(str || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showError(pageId, msg) {
+  const page = document.getElementById(pageId);
+  let errEl = page.querySelector('.error-msg');
+  if (!errEl) {
+    errEl = document.createElement('div');
+    errEl.className = 'error-msg';
+    page.insertBefore(errEl, page.firstChild);
+  }
+  errEl.textContent = msg;
+}
+
+// ── Init ──────────────────────────────────────────────
+loadDashboard();
+</script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+# ─────────────────────────────────────────────────────────
+#  docker-compose.yml  —  NEXUS Life OS
+#
+#  This file defines 3 services (containers):
+#    1. db       — PostgreSQL database
+#    2. backend  — Node.js + Express REST API
+#    3. frontend — Nginx serving the HTML/CSS/JS
+#
+#  Run everything with:  docker compose up --build
+#  Stop everything with: docker compose down
+# ─────────────────────────────────────────────────────────
+
+services:
+
+  # ── 1. DATABASE ──────────────────────────────────────
+  db:
+    image: postgres:15-alpine      # official PostgreSQL image (alpine = small)
+    container_name: nexus_db
+
+    environment:
+      # These variables configure the PostgreSQL instance
+      POSTGRES_DB:       nexus          # name of the database to create
+      POSTGRES_USER:     nexus_user     # database username
+      POSTGRES_PASSWORD: nexus_pass     # database password
+
+    volumes:
+      # Mount our SQL file — Postgres runs it automatically on first start
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+      # Named volume for data persistence
+      # Without this, ALL your data disappears when the container stops
+      - postgres_data:/var/lib/postgresql/data
+
+    # Only the backend needs to reach the database
+    # We do NOT expose port 5432 to the host (more secure)
+    networks:
+      - nexus_network
+
+    # Restart the container if it crashes
+    restart: unless-stopped
+
+
+  # ── 2. BACKEND ───────────────────────────────────────
+  backend:
+    build: ./backend               # build using backend/Dockerfile
+    container_name: nexus_backend
+
+    environment:
+      # Tell our Node.js app how to connect to the database
+      # DB_HOST uses "db" — the service name above, not localhost!
+      # Docker's internal DNS resolves service names automatically
+      DB_HOST:     db
+      DB_PORT:     5432
+      DB_NAME:     nexus
+      DB_USER:     nexus_user
+      DB_PASSWORD: nexus_pass
+      PORT:        3000
+
+    ports:
+      # Map host port 3000 → container port 3000
+      # So http://localhost:3000 reaches the API from your browser
+      - "3000:3000"
+
+    depends_on:
+      - db                         # start db container first
+
+    networks:
+      - nexus_network
+
+    restart: unless-stopped
+
+
+  # ── 3. FRONTEND ──────────────────────────────────────
+  frontend:
+    build: ./frontend              # build using frontend/Dockerfile
+    container_name: nexus_frontend
+
+    ports:
+      # Map host port 8080 → container port 80 (Nginx)
+      # So http://localhost:8080 opens the app in your browser
+      - "8080:80"
+
+    depends_on:
+      - backend                    # start backend first
+
+    networks:
+      - nexus_network
+
+    restart: unless-stopped
+
+
+# ── VOLUMES ──────────────────────────────────────────────
+volumes:
+  postgres_data:
+    # Docker manages this volume on your host machine
+    # Data survives container restarts and docker compose down
+    # Location on host: /var/lib/docker/volumes/nexus-docker_postgres_data
+
+
+# ── NETWORKS ─────────────────────────────────────────────
+networks:
+  nexus_network:
+    # A private network shared by all 3 containers
+    # Containers can reach each other by service name (e.g. "db", "backend")
+    # Nothing outside Docker can access this network directly
+    driver: bridge
