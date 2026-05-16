@@ -94,12 +94,4 @@ Data is stored in a Docker named volume `postgres_data`.
 It survives `docker compose down` and container restarts.  
 Only `docker compose down -v` deletes it.
 
-## Team
 
-Group Name: _______________
-
-| Name | Responsibility |
-|------|----------------|
-|      | Frontend       |
-|      | Backend        |
-|      | Docker / DB    |
