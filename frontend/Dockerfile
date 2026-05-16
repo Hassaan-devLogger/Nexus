@@ -1,7 +1,3 @@
-# ─────────────────────────────────────────────
-#  Frontend Dockerfile
-#  Uses Nginx to serve our static HTML/CSS/JS
-# ─────────────────────────────────────────────
 
 # Use the official lightweight Nginx image
 FROM nginx:alpine
