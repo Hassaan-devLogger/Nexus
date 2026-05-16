@@ -1,7 +1,3 @@
-# ─────────────────────────────────────────────
-#  Backend Dockerfile
-#  Builds the Node.js + Express API container
-# ─────────────────────────────────────────────
 
 # Start from the official Node.js image (slim = smaller size)
 FROM node:18-slim
